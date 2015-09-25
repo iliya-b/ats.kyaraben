@@ -1,0 +1,67 @@
+heat_template_version: 2014-10-16
+
+description: Deploy an Android instance
+
+parameters:
+  data_image:
+    type: string
+  system_image:
+    type: string
+  sdcard_image:
+    type: string
+    default: sdcard-1g
+  floating_net:
+    type: string
+
+
+resources:
+
+  android:
+    type: OS::Nova::Server
+    depends_on: [ system, data, sdcard, player_port ]
+    properties:
+      flavor: aic.android
+      # Add a security group without floating ip:
+      networks: [
+        { port: { get_resource: player_port } },
+        { network: aic-wifi-net },
+        { network: aic-mobile-net },
+      ]
+      block_device_mapping: [
+        { device_name: "vda", volume_id : { get_resource : system }},
+        { device_name: "vdb", volume_id : { get_resource : data }},
+        { device_name: "vdc", volume_id : { get_resource : sdcard }},
+      ]
+
+  player_port:
+    type: OS::Neutron::Port
+    properties:
+      network: 'aic-player-net'
+      fixed_ips:
+        - subnet: 'aic-player-subnet'
+      security_groups: [ 'icmp-sec', 'android-sec' ]
+
+  system:
+    type: OS::Cinder::Volume
+    properties:
+      image: { get_param: system_image }
+      size: 2
+
+  data:
+    type: OS::Cinder::Volume
+    properties:
+      image: { get_param: data_image }
+      size: 4
+
+  sdcard:
+    type: OS::Cinder::Volume
+    properties:
+      image: { get_param: sdcard_image }
+      size: 1
+
+
+outputs:
+  instance_ip:
+    description: private IP address of the vm
+    value: { get_attr: [player_port, fixed_ips, 0, ip_address] }
+

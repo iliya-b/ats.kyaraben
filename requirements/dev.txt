@@ -1,0 +1,4 @@
+-r common.txt
+-e ../ats.client
+-e ../ats.util
+-e .

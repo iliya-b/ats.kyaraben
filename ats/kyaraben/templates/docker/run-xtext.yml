@@ -1,0 +1,15 @@
+version: "2"
+
+services:
+  xtext:
+    container_name: "xtext"
+    restart: unless-stopped
+    image: aic.dslcc
+    ports:
+      - 8080:8080
+    command: gradle jettyRun
+
+networks:
+  default:
+    driver_opts:
+      com.docker.network.driver.mtu: 1400

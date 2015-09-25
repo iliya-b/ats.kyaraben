@@ -1,0 +1,18 @@
+alabaster==0.7.9
+-e git+git@git.rnd.alterway.fr:aic_ats/ats.client.git@d91a442d1fd38e2c0ef7072ce65a82a0b5371932#egg=ats.client
+-e git+git@git.rnd.alterway.fr:aic_ats/ats.kyaraben.git@a4a2928b7bff5c86cb02dee4c06ca4e0bc034e2f#egg=ats.kyaraben
+-e git+git@git.rnd.alterway.fr:aic_ats/ats.util.git@14986cbee1f2fd38a6f9445149f6501be9c49e2e#egg=ats.util
+Babel==2.3.4
+blockdiag==1.5.3
+docutils==0.12
+funcparserlib==0.3.6
+imagesize==0.7.1
+Pillow==3.3.1
+Pygments==2.1.3
+pytz==2016.6.1
+snowballstemmer==1.2.1
+Sphinx==1.4.6
+sphinx-rtd-theme==0.1.9
+sphinxcontrib-httpdomain==1.5.0
+sphinxcontrib-programoutput==0.8
+webcolors==1.5

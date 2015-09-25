@@ -1,0 +1,37 @@
+heat_template_version: 2014-10-16
+
+description: Deploy an Android instance
+
+parameters:
+  data_image:
+    type: string
+  system_image:
+    type: string
+  sdcard_image:
+    type: string
+    default: sdcard-1g
+  floating_net:
+    type: string
+
+
+resources:
+
+  service_port:
+    type: OS::Neutron::Port
+    properties:
+      network: 'aic-service-net'
+      fixed_ips:
+        - subnet: 'aic-service-subnet'
+      security_groups: [ 'icmp-sec', 'android-sec-dev' ]
+
+  floating_ip:
+    type: OS::Neutron::FloatingIP
+    properties:
+      floating_network: { get_param: floating_net }
+      port_id: { get_resource: service_port }
+
+outputs:
+  instance_ip:
+    description: floating IP address of the vm
+    value: { get_attr: [ floating_ip, floating_ip_address ] }
+

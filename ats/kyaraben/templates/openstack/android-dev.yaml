@@ -1,0 +1,79 @@
+heat_template_version: 2014-10-16
+
+description: Deploy an Android instance
+
+parameters:
+  data_image:
+    type: string
+  system_image:
+    type: string
+  sdcard_image:
+    type: string
+    default: sdcard-1g
+  floating_net:
+    type: string
+
+
+resources:
+
+  android:
+    type: OS::Nova::Server
+    depends_on: [ system, data, sdcard, service_port ]
+    properties:
+      flavor: aic.android
+      # Add a security group without floating ip:
+      networks: [
+        { port: { get_resource: service_port } },
+        { network: aic-wifi-net },
+        { network: aic-mobile-net },
+      ]
+      block_device_mapping: [
+        { device_name: "vda", volume_id : { get_resource : system }},
+        { device_name: "vdb", volume_id : { get_resource : data }},
+        { device_name: "vdc", volume_id : { get_resource : sdcard }},
+      ]
+#      # for Liberty
+#      block_device_mapping_v2: [
+#        { boot_index: 0, device_name: "vda", volume_id : { get_resource : system }},
+#        { boot_index: 1, device_name: "vdb", volume_id : { get_resource : data }},
+#        { boot_index: 2, device_name: "vdc", volume_id : { get_resource : sdcard }},
+#      ]
+
+  service_port:
+    type: OS::Neutron::Port
+    properties:
+      network: 'aic-service-net'
+      fixed_ips:
+        - subnet: 'aic-service-subnet'
+      security_groups: [ 'icmp-sec', 'android-sec-dev' ]
+
+  floating_ip:
+    type: OS::Neutron::FloatingIP
+    properties:
+      floating_network: { get_param: floating_net }
+      port_id: { get_resource: service_port }
+
+  system:
+    type: OS::Cinder::Volume
+    properties:
+      image: { get_param: system_image }
+      size: 2
+
+  data:
+    type: OS::Cinder::Volume
+    properties:
+      image: { get_param: data_image }
+      size: 4
+
+  sdcard:
+    type: OS::Cinder::Volume
+    properties:
+      image: { get_param: sdcard_image }
+      size: 1
+
+
+outputs:
+  instance_ip:
+    description: floating IP address of the vm
+    value: { get_attr: [ floating_ip, floating_ip_address ] }
+
