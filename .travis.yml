@@ -1,0 +1,23 @@
+language: python
+
+python:
+  - "3.5"
+
+install:
+  - git clone https://github.com/AiC-Project/ats.client.git
+  - git clone https://github.com/AiC-Project/ats.util.git
+  - pip install ./ats.client
+  - pip install ./ats.util
+  - pip install -e .[docs]
+
+script:
+  - rm -rf doc/build && python setup.py build_sphinx --all-files
+  - ls build/html
+
+notifications:
+  email: false
+
+addons:
+  apt:
+    packages:
+      - libpq-dev
