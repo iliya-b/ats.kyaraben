@@ -12,7 +12,7 @@ install:
 
 script:
   - rm -rf doc/build && python setup.py build_sphinx --all-files
-  - ls build/html
+  - ls doc/build/html
 
 notifications:
   email: false
