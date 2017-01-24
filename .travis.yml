@@ -7,7 +7,7 @@ install:
   - git clone https://github.com/AiC-Project/ats.client.git ../ats.client
   - git clone https://github.com/AiC-Project/ats.util.git ../ats.util
   - pip install --upgrade pip
-  - pip install -r requirements/doc.txt
+  - pip install -r requirements/docs.txt
 
 script:
   - python setup.py build_sphinx --all-files
