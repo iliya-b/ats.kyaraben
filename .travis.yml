@@ -4,15 +4,14 @@ python:
   - "3.5"
 
 install:
-  - git clone https://github.com/AiC-Project/ats.client.git
-  - git clone https://github.com/AiC-Project/ats.util.git
-  - pip install ./ats.client
-  - pip install ./ats.util
-  - pip install -e .[docs]
+  - git clone https://github.com/AiC-Project/ats.client.git ../ats.client
+  - git clone https://github.com/AiC-Project/ats.util.git ../ats.util
+  - pip install --upgrade pip
+  - pip install -r requirements/doc.txt
 
 script:
-  - rm -rf doc/build && python setup.py build_sphinx --all-files
-  - ls doc/build/html
+  - python setup.py build_sphinx --all-files
+  - bash .travis/publish-docs.sh
 
 notifications:
   email: false
@@ -21,3 +20,7 @@ addons:
   apt:
     packages:
       - libpq-dev
+
+branches:
+  only:
+    -  master
