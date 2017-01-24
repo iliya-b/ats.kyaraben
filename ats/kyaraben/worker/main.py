@@ -191,6 +191,9 @@ def get_parser():
 
 
 def main(argv=sys.argv[1:]):
+    parser = get_parser()
+    args = parser.parse_args(argv)
+
     config = config_get(environ=os.environ)
     setup_logging(config)
     setup_structlog(config,
@@ -199,9 +202,6 @@ def main(argv=sys.argv[1:]):
     loop = asyncio.get_event_loop()
     # asyncio debugging
     loop.set_debug(enabled=False)
-
-    parser = get_parser()
-    args = parser.parse_args(argv)
 
     loop.run_until_complete(init(loop=loop, config=config, args=args))
 
