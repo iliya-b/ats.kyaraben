@@ -11,6 +11,7 @@ from ats.kyaraben.docker import cmd_docker_exec
 from ats.kyaraben.model.android import AndroidVM
 from ats.kyaraben.model.apk import APK
 from ats.kyaraben.password import generate_password
+from ats.kyaraben.process import ProcessError
 from ats.util.helpers import authenticated_userid, json_request
 from ats.util.db import sql
 from ats.util.logging import nullog
@@ -231,9 +232,12 @@ class AndroidHandler:
         log = request['slog']
         log.debug('Property list requested')
 
-        proc = await cmd_docker_exec('{.avm_id}_adb'.format(avm),
-                                     'adb', 'shell', 'getprop', log=nullog)
-        properties = self._parse_properties(proc.out_lines, log=log)
+        try:
+            proc = await cmd_docker_exec('{.avm_id}_adb'.format(avm),
+                                         'adb', 'shell', 'getprop', log=nullog)
+            properties = self._parse_properties(proc.out_lines, log=log)
+        except ProcessError:
+            properties = {}
 
         return web.json_response({'properties': properties})
 
