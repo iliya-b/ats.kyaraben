@@ -7,7 +7,7 @@ from ats.util.logging import nullog
 
 async def inspect_port(container, port):
     fmt = '{{(index (index .NetworkSettings.Ports "%s") 0).HostPort}}' % port
-    proc = await cmd_docker_inspect("--format='%s'" % fmt, container, log=nullog)
+    proc = await cmd_docker_inspect('--format', fmt, container, log=nullog)
     return proc.out
 
 
