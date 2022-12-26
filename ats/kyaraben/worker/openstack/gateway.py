@@ -42,6 +42,21 @@ class OpenStackGateway:
             }
         }
 
+    async def get_catalog(self, token_id):
+        r = await self.session.post(self.os_auth_url + '/catalog',
+                                    data=json.dumps(self.auth_payload),
+                                    headers=[header_json_content + ('X-Auth-Token', token_id)])
+        js = await r.json()
+
+        if r.status >= 300:
+            self.logger.error('HTTP error: %s' % js)
+            for line in repr(r).split('\n'):
+                if line:
+                    self.logger.error(line)
+            raise Exception('Error while authenticating with OpenStack')
+        
+        return js
+
     async def new_auth(self):
         r = await self.session.post(self.os_auth_url + '/tokens',
                                     data=json.dumps(self.auth_payload),
@@ -54,13 +69,13 @@ class OpenStackGateway:
                 if line:
                     self.logger.error(line)
             raise Exception('Error while authenticating with OpenStack')
-
+        token_id = r.headers['x-subject-token']
         return {
-            'token_id': r.headers['x-subject-token'], #js['access']['token']['id'],
-            # 'endpoints': {
-            #     service['name']: service['endpoints'][0]['publicURL']
-            #     for service in js['access']['serviceCatalog']
-            # }
+            'token_id': token_id, #js['access']['token']['id'],
+            'endpoints': {
+                 service['name']: service['endpoints'][0]['url']
+                 for service in (await self.get_catalog(token_id))['catalog']
+             }
         }
 
     async def _request(self, service, method, auth, path, data, headers):
