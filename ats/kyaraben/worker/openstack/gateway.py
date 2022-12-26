@@ -43,8 +43,7 @@ class OpenStackGateway:
         }
 
     async def get_catalog(self, token_id):
-        r = await self.session.post(self.os_auth_url + '/catalog',
-                                    data=json.dumps(self.auth_payload),
+        r = await self.session.get(self.os_auth_url + '/catalog',
                                     headers=[header_json_content, ('X-Auth-Token', token_id) ])
         js = await r.json()
 
