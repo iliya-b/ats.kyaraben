@@ -29,10 +29,15 @@ class OpenStackGateway:
     def auth_payload(self):
         return {
             'auth': {
-                'tenantName': self.os_tenant_name,
-                'passwordCredentials': {
-                    'username': self.os_username,
-                    'password': self.os_password
+                'identity':{
+                    'methods':['password'],
+                    'password':{
+                        'user':{
+                            'domain':{'name':'Default'},
+                            'name': self.os_username,
+                            'password': self.os_password
+                        }
+                    }
                 }
             }
         }
@@ -43,7 +48,7 @@ class OpenStackGateway:
                                     headers=[header_json_content])
         js = await r.json()
 
-        if r.status != HTTPStatus.OK:
+        if r.status >= 300:
             self.logger.error('HTTP error: %s' % js)
             for line in repr(r).split('\n'):
                 if line:
@@ -51,11 +56,11 @@ class OpenStackGateway:
             raise Exception('Error while authenticating with OpenStack')
 
         return {
-            'token_id': js['access']['token']['id'],
-            'endpoints': {
-                service['name']: service['endpoints'][0]['publicURL']
-                for service in js['access']['serviceCatalog']
-            }
+            'token_id': r.headers['x-subject-token'], #js['access']['token']['id'],
+            # 'endpoints': {
+            #     service['name']: service['endpoints'][0]['publicURL']
+            #     for service in js['access']['serviceCatalog']
+            # }
         }
 
     async def _request(self, service, method, auth, path, data, headers):
