@@ -29,13 +29,32 @@ class OpenStackGateway:
     def auth_payload(self):
         return {
             'auth': {
-                'tenantName': self.os_tenant_name,
-                'passwordCredentials': {
-                    'username': self.os_username,
-                    'password': self.os_password
+                'identity':{
+                    'methods':['password'],
+                    'password':{
+                        'user':{
+                            'domain':{'name':'Default'},
+                            'name': self.os_username,
+                            'password': self.os_password
+                        }
+                    }
                 }
             }
         }
+
+    async def get_catalog(self, token_id):
+        r = await self.session.get(self.os_auth_url + '/catalog',
+                                    headers=[header_json_content, ('X-Auth-Token', token_id) ])
+        js = await r.json()
+
+        if r.status >= 300:
+            self.logger.error('HTTP error: %s' % js)
+            for line in repr(r).split('\n'):
+                if line:
+                    self.logger.error(line)
+            raise Exception('Error while authenticating with OpenStack')
+        
+        return js
 
     async def new_auth(self):
         r = await self.session.post(self.os_auth_url + '/tokens',
@@ -43,19 +62,19 @@ class OpenStackGateway:
                                     headers=[header_json_content])
         js = await r.json()
 
-        if r.status != HTTPStatus.OK:
+        if r.status >= 300:
             self.logger.error('HTTP error: %s' % js)
             for line in repr(r).split('\n'):
                 if line:
                     self.logger.error(line)
             raise Exception('Error while authenticating with OpenStack')
-
+        token_id = r.headers['x-subject-token']
         return {
-            'token_id': js['access']['token']['id'],
+            'token_id': token_id, #js['access']['token']['id'],
             'endpoints': {
-                service['name']: service['endpoints'][0]['publicURL']
-                for service in js['access']['serviceCatalog']
-            }
+                 service['name']: service['endpoints'][0]['url']
+                 for service in (await self.get_catalog(token_id))['catalog']
+             }
         }
 
     async def _request(self, service, method, auth, path, data, headers):
