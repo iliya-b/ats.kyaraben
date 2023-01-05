@@ -106,7 +106,7 @@ def main(argv=sys.argv[1:]):
         loop.run_until_complete(schema.db_update(pool))
 
     loop.run_until_complete(schema.db_require_latest_version(pool))
-    loop.run_until_complete(restart_xtext())
+    #loop.run_until_complete(restart_xtext())
     loop.run_until_complete(init(loop=loop, config=config, debug=args.debug))
 
     try:
