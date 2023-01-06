@@ -9,7 +9,7 @@ from .exceptions import AVMNotFoundError, AVMCreationError, AVMImageNotFoundErro
 
 header_json_content = ('Content-Type', 'application/json')
 
-HEAT = 'heat-api'
+HEAT = 'heat'
 
 GET = 'get'
 POST = 'post'
